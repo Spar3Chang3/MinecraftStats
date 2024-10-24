@@ -13,7 +13,7 @@ public class Main {
         TailerListenerAdapter logListener = new TailerListenerAdapter() {
             @Override
             public void handle(String line) {
-                buffer.enqueue(line);
+                buffer.enqueue(IpSanitizer.removeIp(line));
                 System.out.println(line);
             }
         };
