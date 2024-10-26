@@ -4,28 +4,44 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
-public class FileConfiguration {
+public class FileConfig {
     private static final String CONFIG_DIR = "./data/config.txt";
 
     private static final File configFile = new File(CONFIG_DIR);
     private static FileReader configReader;
 
+    private static String logPath;
+    private static String heapMetricPath;
+
+    static {
+        readConfig();
+    }
+
     public static String getLogPath() {
-        StringBuilder logPath = new StringBuilder();
+        return logPath;
+    }
+
+    public static String getHeapMetricPath() {
+        return heapMetricPath;
+    }
+
+    private static void readConfig() {
+        StringBuilder currentLine = new StringBuilder();
         int character;
         char charToAppend;
         boolean continueReading = true;
 
         try {
             configReader = new FileReader(configFile);
-
             while ((character = configReader.read()) != -1 && continueReading) {
                 charToAppend = (char) character;
 
                 if (charToAppend == '\n') {
-                    continueReading = checkParams(logPath);
+                    System.out.println("Latest line: " + currentLine.toString());
+                    continueReading = checkParams(currentLine);
                 } else {
-                    logPath.append(charToAppend);
+                    System.out.println("Latest char: " + charToAppend);
+                    currentLine.append(charToAppend);
                 }
             }
         } catch (IOException e) {
@@ -34,16 +50,23 @@ public class FileConfiguration {
             e.printStackTrace();
             System.exit(1);
         }
-
-        return logPath.substring(logPath.indexOf("\"")+1, logPath.lastIndexOf("\""));
     }
-
 
     private static boolean checkParams(StringBuilder toCheck) {
         if (toCheck.toString().startsWith("#")) {
             toCheck.delete(0, toCheck.length());
             return true;
-        } else return !toCheck.toString().startsWith("logPath");
+        } else return switch (toCheck.substring(0, toCheck.indexOf("=")).replace(" ", "")) {
+            case "logPath" -> {
+                logPath = toCheck.substring(toCheck.indexOf("=") + 1, toCheck.length());
+                yield true;
+            }
+            case "heapMetricPath" -> {
+                heapMetricPath = toCheck.substring(toCheck.indexOf("=") + 1, toCheck.length());
+                yield false;
+            }
+            default -> true;
+        };
     }
 
 }
