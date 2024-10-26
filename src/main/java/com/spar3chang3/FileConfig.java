@@ -13,10 +13,6 @@ public class FileConfig {
     private static String logPath;
     private static String heapMetricPath;
 
-    static {
-        readConfig();
-    }
-
     public static String getLogPath() {
         return logPath;
     }
@@ -25,7 +21,7 @@ public class FileConfig {
         return heapMetricPath;
     }
 
-    private static void readConfig() {
+    public static void readConfig() {
         StringBuilder currentLine = new StringBuilder();
         int character;
         char charToAppend;
@@ -37,10 +33,8 @@ public class FileConfig {
                 charToAppend = (char) character;
 
                 if (charToAppend == '\n') {
-                    System.out.println("Latest line: " + currentLine.toString());
                     continueReading = checkParams(currentLine);
                 } else {
-                    System.out.println("Latest char: " + charToAppend);
                     currentLine.append(charToAppend);
                 }
             }
@@ -53,20 +47,27 @@ public class FileConfig {
     }
 
     private static boolean checkParams(StringBuilder toCheck) {
-        if (toCheck.toString().startsWith("#")) {
-            toCheck.delete(0, toCheck.length());
+        if (! toCheck.toString().contains("=")) {
             return true;
-        } else return switch (toCheck.substring(0, toCheck.indexOf("=")).replace(" ", "")) {
+        } else switch (toCheck.substring(0, toCheck.indexOf("=")).replaceAll("\"", "")) {
             case "logPath" -> {
                 logPath = toCheck.substring(toCheck.indexOf("=") + 1, toCheck.length());
-                yield true;
+                toCheck.delete(0, toCheck.length());
+                System.out.println("Log path: " + logPath);
+                return true;
             }
             case "heapMetricPath" -> {
                 heapMetricPath = toCheck.substring(toCheck.indexOf("=") + 1, toCheck.length());
-                yield false;
+                toCheck.delete(0, toCheck.length());
+                System.out.println("Heap metric path: " + heapMetricPath);
+                return false;
             }
-            default -> true;
-        };
+            default -> {
+                System.out.println("Default: " + toCheck.toString());
+                toCheck.delete(0, toCheck.length());
+                return true;
+            }
+        }
     }
 
 }
