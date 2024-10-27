@@ -1,3 +1,7 @@
 #Add further config here, for now it's just the logfile and heapMetric path
+
 logPath = "This is a test"
-heapMetricPath = "This is a test 2"
+
+heapMetricPath = "This is another test"
+
+END

@@ -13,6 +13,10 @@ public class FileConfig {
     private static String logPath;
     private static String heapMetricPath;
 
+    static {
+        readConfig();
+    }
+
     public static String getLogPath() {
         return logPath;
     }
@@ -25,15 +29,14 @@ public class FileConfig {
         StringBuilder currentLine = new StringBuilder();
         int character;
         char charToAppend;
-        boolean continueReading = true;
 
         try {
             configReader = new FileReader(configFile);
-            while ((character = configReader.read()) != -1 && continueReading) {
+            while ((character = configReader.read()) != -1) {
                 charToAppend = (char) character;
-
                 if (charToAppend == '\n') {
-                    continueReading = checkParams(currentLine);
+                    checkParams(currentLine.toString());
+                    currentLine.delete(0, currentLine.length());
                 } else {
                     currentLine.append(charToAppend);
                 }
@@ -46,26 +49,27 @@ public class FileConfig {
         }
     }
 
-    private static boolean checkParams(StringBuilder toCheck) {
-        if (! toCheck.toString().contains("=")) {
-            return true;
-        } else switch (toCheck.substring(0, toCheck.indexOf("=")).replaceAll("\"", "")) {
+    private static void checkParams(String toCheck) {
+        toCheck = toCheck.trim();
+        if (toCheck.isEmpty() || toCheck.startsWith("#")) {
+            return;
+        }
+        String[] configParts = toCheck.split("=");
+        if (configParts.length != 2) {
+            return;
+        }
+        configParts[0] = configParts[0].trim(); //key
+        configParts[1] = configParts[1].trim(); //value
+
+        switch (configParts[0]) {
             case "logPath" -> {
-                logPath = toCheck.substring(toCheck.indexOf("=") + 1, toCheck.length());
-                toCheck.delete(0, toCheck.length());
-                System.out.println("Log path: " + logPath);
-                return true;
+                logPath = configParts[1].replace("\"", "");
             }
             case "heapMetricPath" -> {
-                heapMetricPath = toCheck.substring(toCheck.indexOf("=") + 1, toCheck.length());
-                toCheck.delete(0, toCheck.length());
-                System.out.println("Heap metric path: " + heapMetricPath);
-                return false;
+                heapMetricPath = configParts[1].replace("\"", "");
             }
             default -> {
-                System.out.println("Default: " + toCheck.toString());
-                toCheck.delete(0, toCheck.length());
-                return true;
+                System.out.println("ERR on line: " + toCheck);
             }
         }
     }
