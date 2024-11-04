@@ -19,7 +19,7 @@ public class LogFileTailer {
     }
 
     public LogFileTailer(TailerListenerAdapter logListener) {
-        this.logFilePath = FileConfiguration.getLogPath();
+        this.logFilePath = FileConfig.getLogPath();
         this.logListener = logListener;
         setup();
     }
